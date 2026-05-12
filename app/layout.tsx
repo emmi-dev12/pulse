@@ -3,7 +3,7 @@ import './globals.css';
 
 export const metadata: Metadata = {
   title: 'Pulse',
-  description: 'Neon pink transcription workspace with Gladia integration scaffolding.',
+  description: 'High-end neon transcription PWA with Composio-powered audio workflows.',
   applicationName: 'Pulse',
   manifest: '/manifest.webmanifest',
   themeColor: '#ff2da8',
