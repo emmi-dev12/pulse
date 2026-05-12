@@ -1,5 +1,10 @@
 import { normalizeConvexUrl, type PulseHistoryEntry } from './pulse-settings';
 
+type ConvexHistoryPayload =
+  | PulseHistoryEntry[]
+  | { entries?: PulseHistoryEntry[] }
+  | { history?: PulseHistoryEntry[] };
+
 export async function loadConvexHistory(convexUrl: string) {
   const baseUrl = normalizeConvexUrl(convexUrl);
   if (!baseUrl) {
@@ -17,16 +22,14 @@ export async function loadConvexHistory(convexUrl: string) {
     throw new Error(`Convex history request failed with status ${response.status}.`);
   }
 
-  const payload = (await response.json()) as
-    | PulseHistoryEntry[]
-    | { entries?: PulseHistoryEntry[] }
-    | { history?: PulseHistoryEntry[] };
+  const payload = (await response.json()) as ConvexHistoryPayload;
 
   if (Array.isArray(payload)) {
     return payload;
   }
 
-  return payload.entries ?? payload.history ?? [];
+  const result = payload as { entries?: PulseHistoryEntry[]; history?: PulseHistoryEntry[] };
+  return result.entries ?? result.history ?? [];
 }
 
 export async function syncConvexHistory(convexUrl: string, entry: PulseHistoryEntry) {
