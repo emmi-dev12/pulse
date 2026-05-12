@@ -4,8 +4,9 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: 'Pulse',
     short_name: 'Pulse',
-    description: 'Neon transcription cockpit with Composio-ready audio workflows.',
+    description: 'Decentralized neon transcription cockpit with user-owned connections.',
     start_url: '/',
+    scope: '/',
     display: 'standalone',
     background_color: '#050005',
     theme_color: '#ff2da8',
