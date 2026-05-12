@@ -18,6 +18,11 @@ export type ComposioTranscriptionResult = {
   requestId?: string;
 };
 
+export type ComposioTranscriptionInput = {
+  audio: Blob;
+  apiKey?: string;
+};
+
 function createFallbackTranscript(message: string): ComposioTranscriptionResult {
   return {
     status: 'queued',
@@ -31,18 +36,18 @@ function createFallbackTranscript(message: string): ComposioTranscriptionResult 
   };
 }
 
-export async function transcribeAudioWithComposio(audio: Blob) {
+export async function transcribeAudioWithComposio(input: ComposioTranscriptionInput) {
   const endpoint = process.env.COMPOSIO_TRANSCRIPTION_ENDPOINT;
-  const apiKey = process.env.COMPOSIO_API_KEY;
+  const apiKey = input.apiKey ?? process.env.COMPOSIO_API_KEY;
 
   if (!endpoint || !apiKey) {
     return createFallbackTranscript(
-      'Composio transcription is scaffolded. Set COMPOSIO_API_KEY and COMPOSIO_TRANSCRIPTION_ENDPOINT to enable live transcription.'
+      'Composio transcription is scaffolded. Save your API key in Pulse connections and define COMPOSIO_TRANSCRIPTION_ENDPOINT to enable live transcription.'
     );
   }
 
   const formData = new FormData();
-  formData.append('file', audio, 'pulse-recording.webm');
+  formData.append('file', input.audio, 'pulse-recording.webm');
   formData.append('toolset', process.env.COMPOSIO_TRANSCRIPTION_TOOLSET ?? 'transcription');
 
   const response = await fetch(endpoint, {
