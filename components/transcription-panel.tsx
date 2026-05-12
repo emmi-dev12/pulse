@@ -1,10 +1,19 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import type { PulseConnections } from '../lib/pulse-settings';
 
 type Status = 'idle' | 'recording' | 'uploading' | 'ready' | 'error';
 
-export function TranscriptionPanel() {
+export function TranscriptionPanel(props: {
+  connections: PulseConnections;
+  onTranscriptCaptured: (result: {
+    text: string;
+    status: 'completed' | 'queued';
+    language?: string;
+    confidence?: number | null;
+  }) => void | Promise<void>;
+}) {
   const [status, setStatus] = useState<Status>('idle');
   const [transcript, setTranscript] = useState('');
   const [isMicActive, setIsMicActive] = useState(false);
@@ -45,6 +54,7 @@ export function TranscriptionPanel() {
       mediaStreamRef.current?.getTracks().forEach((track) => track.stop());
       stopTimer();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   function startTimer() {
@@ -62,19 +72,24 @@ export function TranscriptionPanel() {
     }
   }
 
-  function resetSession() {
-    stopTimer();
+  function cleanupTracks() {
     mediaStreamRef.current?.getTracks().forEach((track) => track.stop());
     mediaStreamRef.current = null;
     recorderRef.current = null;
-    chunksRef.current = [];
     setIsMicActive(false);
+  }
+
+  function resetSession() {
+    stopTimer();
+    cleanupTracks();
+    chunksRef.current = [];
   }
 
   async function uploadRecording(blob: Blob) {
     setStatus('uploading');
     const formData = new FormData();
     formData.append('file', blob, 'pulse-recording.webm');
+    formData.append('composioApiKey', props.connections.composioApiKey);
 
     const response = await fetch('/api/transcription', {
       method: 'POST',
@@ -87,9 +102,18 @@ export function TranscriptionPanel() {
 
     const payload = await response.json();
     const nextTranscript = payload?.transcript?.text ?? '';
+    const nextStatus = payload?.status === 'queued' ? 'queued' : 'completed';
+    const nextLanguage = payload?.transcript?.language ?? 'en';
+    const nextConfidence = payload?.transcript?.confidence ?? null;
     setTranscript(nextTranscript || 'Transcript returned with no text.');
     setStatus('ready');
     setErrorMessage(null);
+    await props.onTranscriptCaptured({
+      text: nextTranscript || 'Transcript returned with no text.',
+      status: nextStatus,
+      language: nextLanguage,
+      confidence: nextConfidence
+    });
   }
 
   async function startRecording() {
@@ -130,10 +154,7 @@ export function TranscriptionPanel() {
         const blob = new Blob(chunksRef.current, { type: 'audio/webm' });
         chunksRef.current = [];
         stopTimer();
-        mediaStreamRef.current?.getTracks().forEach((track) => track.stop());
-        mediaStreamRef.current = null;
-        recorderRef.current = null;
-        setIsMicActive(false);
+        cleanupTracks();
 
         if (suppressUploadRef.current) {
           return;
@@ -201,9 +222,9 @@ export function TranscriptionPanel() {
         <button className="ghost-button" onClick={handleStopClick} type="button" disabled={!isMicActive}>
           Stop mic
         </button>
-        <a className="badge" href="/api/transcription">
-          Composio route
-        </a>
+        <span className={`badge ${props.connections.composioApiKey ? 'badge-ready' : ''}`}>
+          {props.connections.composioApiKey ? 'Composio key saved' : 'Add Composio key'}
+        </span>
       </div>
 
       <textarea
