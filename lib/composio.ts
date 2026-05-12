@@ -38,7 +38,7 @@ function createFallbackTranscript(message: string): ComposioTranscriptionResult 
 
 export async function transcribeAudioWithComposio(input: ComposioTranscriptionInput) {
   const endpoint = process.env.COMPOSIO_TRANSCRIPTION_ENDPOINT;
-  const apiKey = input.apiKey ?? process.env.COMPOSIO_API_KEY;
+  const apiKey = input.apiKey?.trim() || process.env.COMPOSIO_API_KEY;
 
   if (!endpoint || !apiKey) {
     return createFallbackTranscript(
