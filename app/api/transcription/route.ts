@@ -23,7 +23,7 @@ export async function POST(request: Request) {
 
     const result = await transcribeAudioWithComposio({
       audio: file,
-      apiKey: typeof apiKey === 'string' ? apiKey : undefined
+      apiKey: typeof apiKey === 'string' && apiKey.trim() ? apiKey.trim() : undefined
     });
 
     return NextResponse.json({ ok: true, ...result });
