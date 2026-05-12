@@ -36,7 +36,9 @@ function createFallbackTranscript(message: string): ComposioTranscriptionResult 
   };
 }
 
-export async function transcribeAudioWithComposio(input: ComposioTranscriptionInput) {
+export async function transcribeAudioWithComposio(
+  input: ComposioTranscriptionInput
+): Promise<ComposioTranscriptionResult> {
   const endpoint = process.env.COMPOSIO_TRANSCRIPTION_ENDPOINT;
   const apiKey = input.apiKey?.trim() || process.env.COMPOSIO_API_KEY;
 
@@ -66,10 +68,10 @@ export async function transcribeAudioWithComposio(input: ComposioTranscriptionIn
     transcript?: Partial<ComposioTranscript>;
   };
 
-  const transcript = data.transcript ?? {};
+  const transcript: Partial<ComposioTranscript> = data.transcript ?? {};
 
   return {
-    status: (data.status ?? 'completed') as 'completed' | 'queued',
+    status: data.status ?? 'completed',
     requestId: data.requestId,
     transcript: {
       text: transcript.text?.trim() ?? '',
