@@ -1,2 +1,3 @@
-# pulse
-Next.js PWA with neon pink on black UI and Gladia transcription scaffolding.
+# Pulse
+
+Next.js PWA starter with a neon pink on black UI and Gladia transcription scaffolding.

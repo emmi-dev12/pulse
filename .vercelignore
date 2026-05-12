@@ -1,0 +1,12 @@
+node_modules
+.next
+.vercel
+custom-tools
+mcp
+poke
+user
+memory
+agent
+blobs.json
+chat.md
+rpc-bridge.mjs
